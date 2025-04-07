@@ -28,13 +28,14 @@ jobs:
             return;
           }
 
-          const assignee = filtered[Math.floor(Math.random() * filtered.length)];
+          const reviewer = filtered[Math.floor(Math.random() * filtered.length)];
 
           await github.rest.issues.addAssignees({
             owner: context.repo.owner,
+            assignees: context.repo.owner
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            assignees: [assignee]
+            reviewers: [reviewer]
           });
 
           console.log(`Asignado a: ${assignee}`);
