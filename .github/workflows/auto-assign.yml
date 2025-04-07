@@ -1,19 +1,40 @@
 name: Auto Assign
 on:
-  issues:
-    types: [opened]
   pull_request:
     types: [opened]
 jobs:
-  run:
+  auto-assign:
     runs-on: ubuntu-latest
     permissions:
-      issues: write
       pull-requests: write
+      
     steps:
-    - name: 'Auto-assign issue'
-      uses: pozil/auto-assign-issue@v1
+    - name: 'Assign random reviewer'
+      uses: actions/github-script@v7
       with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: jlorenzolimon
-          numOfAssignee: 1
+        github-token: ${{ secrets.GH_PAT_READ_ORG }}
+        script: |
+          const creator = context.payload.pull_request.user.login;
+
+          const { data: members } = await github.rest.teams.listMembersInOrg({
+              org: 'JLL-Company',
+              team_slug: 'reviewers',
+            });
+
+          const filtered = teamMembers.filter(user => user !== creator);
+
+          if (filtered.length === 0) {
+            console.log('No hay nadie a quien asignar (todos menos el autor)');
+            return;
+          }
+
+          const assignee = filtered[Math.floor(Math.random() * filtered.length)];
+
+          await github.rest.issues.addAssignees({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            assignees: [assignee]
+          });
+
+          console.log(`Asignado a: ${assignee}`);
