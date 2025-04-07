@@ -20,7 +20,7 @@ jobs:
               org: 'JLL-Company',
               team_slug: 'reviewers',
             });
-
+          const teamMembers = members.map(member => member.login);
           const filtered = teamMembers.filter(user => user !== creator);
 
           if (filtered.length === 0) {
